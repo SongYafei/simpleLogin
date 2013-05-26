@@ -12,6 +12,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -40,8 +41,9 @@ public class XmlCreate {
 	private Document doc;
 	private Element rootElement, userElement, idElem, nameElem, locsElem, emailElem, phoneElem;
 	private Environment envn;
-	private String xmlName;
-	private int whose;
+	private String[] xmlName = new String[4];
+	private static HashMap<Integer,String> hMap = new HashMap<Integer, String>();
+	private int whose;  //id of the user
 	private Context context;
 	
 	public XmlCreate(Context context, int userId)
@@ -52,7 +54,8 @@ public class XmlCreate {
 		
 	}
 
-	private void createNewDoc() {
+/******* To create a new xml Document(NOT FILE). It has to be created everytime *****/
+	public void createNewDoc() {
 		// TODO Auto-generated method stub
 		try {
 			
@@ -102,24 +105,8 @@ public class XmlCreate {
 		public void readFromSDCard() 
 		{
 		  try{	
-			File myFile = new File(Environment.getExternalStorageDirectory(),xmlName);
-/*
-            FileInputStream fIn = new FileInputStream(myFile);
-
-            BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
-
-            String aDataRow = "";
-
-            String aBuffer = "";
-
-            while ((aDataRow = myReader.readLine()) != null)
-            {
-                            aBuffer += aDataRow + "\n";
-
-            }
-
-            myReader.close(); 
-    */       
+			File myFile = new File(Environment.getExternalStorageDirectory(),xmlName[this.whose]);
+      
 			this.docFactory = DocumentBuilderFactory.newInstance();
 			this.docBuilder = this.docFactory.newDocumentBuilder();
 			this.doc = this.docBuilder.parse(myFile);
@@ -159,9 +146,20 @@ public class XmlCreate {
 		{
 			//Do for Sdcard present
 			Log.v("r/o","excellent");
-			this.xmlName =  namingConvention(this.whose);
+			// TO decide creating or editing, do here
+			if(!hMap.containsKey(this.whose))
+				{	Log.v("Key was never present","phoof");
+					this.xmlName[this.whose] =  namingConvention(this.whose);
+					hMap.put(this.whose, this.xmlName[this.whose]);
+					Log.v("HashMap: ", ""+hMap);
+				}
+			else
+				{	
+					this.xmlName[this.whose] = hMap.get(this.whose);
+					Log.v("Previous Name reused",""+this.xmlName[this.whose]);
+				}
 			
-			File file = new File(Environment.getExternalStorageDirectory(),xmlName);
+			File file = new File(Environment.getExternalStorageDirectory(),xmlName[this.whose]);
 			try {
 				file.createNewFile();
 				FileOutputStream fOut = new FileOutputStream(file);
@@ -237,15 +235,18 @@ public class XmlCreate {
 			Time time = new Time();
 			String timeFormat;
 			Random rand = new Random();
+			int randPosInt = rand.nextInt()%1000;
+			if(randPosInt < 0)
+				randPosInt -= 2*randPosInt;
 			DateFormat dFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
 			Date date = new Date();
 			timeFormat = dFormat.format(date);
 			strBuild.append(timeFormat);
-			strBuild.append("_"+(rand.nextInt()%1000));
+			strBuild.append("_"+randPosInt);
 			strBuild.append("_"+id);
 			strBuild.append(".xml");
 			timeFormat = strBuild.toString();
-			Log.v("Date Format: "+timeFormat," OK");
+			Log.v("New Date Format: "+timeFormat," Created");
 			return timeFormat;
 			
 		}

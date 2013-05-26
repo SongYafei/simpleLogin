@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				//create a new xml file in SDCard using DOM parser
 				xmlCreate = new XmlCreate(MainActivity.this, userId);
-				xmlCreate.readFromSDCard();
+			//	xmlCreate.readFromSDCard();
 			}
 		});
 	}
